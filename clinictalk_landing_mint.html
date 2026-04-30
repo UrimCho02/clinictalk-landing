@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>클리닉톡 — 병원 AI 자동응답 서비스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Lora:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --mint:       #2DBD96;
+  --mint-dark:  #1E9A78;
+  --mint-deep:  #0F7A5E;
+  --mint-soft:  #E8FAF5;
+  --mint-pale:  #F3FDF9;
+  --green:      #1A7A55;
+  --sage:       #6BAF8E;
+  --warm:       #FFF8F4;
+  --peach:      #FF8B6A;
+  --text:       #1C2B26;
+  --text-mid:   #4A6355;
+  --text-light: #8BA898;
+  --border:     #D4EDE4;
+  --white:      #FFFFFF;
+  --radius:     18px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:'Noto Sans KR',sans-serif; background:var(--white); color:var(--text); overflow-x:hidden; }
+
+/* NAV */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 6%; height:64px;
+  background:rgba(255,255,255,0.93); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo { font-size:20px; font-weight:900; color:var(--text); letter-spacing:-.5px; }
+.nav-logo span { color:var(--mint); }
+.nav-links { display:flex; gap:32px; }
+.nav-links a { font-size:14px; color:var(--text-mid); text-decoration:none; font-weight:500; transition:color .2s; }
+.nav-links a:hover { color:var(--mint-dark); }
+.nav-cta {
+  background:var(--mint); color:white; font-size:13px; font-weight:700;
+  padding:9px 22px; border-radius:30px; text-decoration:none;
+  transition:background .2s, transform .15s; box-shadow:0 4px 16px rgba(45,189,150,.3);
+}
+.nav-cta:hover { background:var(--mint-dark); transform:translateY(-1px); }
+
+/* HERO */
+.hero {
+  min-height:100vh; padding:110px 6% 80px;
+  display:flex; align-items:center;
+  background:linear-gradient(150deg, #F0FBF6 0%, #FDFFFE 50%, #FFF8F4 100%);
+  position:relative; overflow:hidden;
+}
+.hero-circle1 {
+  position:absolute; width:520px; height:520px;
+  background:radial-gradient(circle, rgba(45,189,150,.12) 0%, transparent 70%);
+  top:-100px; right:-80px; border-radius:50%;
+}
+.hero-circle2 {
+  position:absolute; width:300px; height:300px;
+  background:radial-gradient(circle, rgba(255,139,106,.08) 0%, transparent 70%);
+  bottom:0; left:10%; border-radius:50%;
+}
+.hero-content { position:relative; z-index:1; max-width:580px; }
+.hero-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background:var(--mint-soft); border:1px solid rgba(45,189,150,.3);
+  color:var(--mint-dark); font-size:12px; font-weight:700;
+  padding:6px 16px; border-radius:30px; margin-bottom:28px;
+  animation:fadeUp .6s ease both;
+}
+.badge-dot {
+  width:7px; height:7px; background:var(--mint);
+  border-radius:50%; animation:pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.5)} }
+.hero h1 {
+  font-family:'Lora',serif; font-size:clamp(34px,4.5vw,56px);
+  color:var(--text); line-height:1.2; margin-bottom:12px;
+  animation:fadeUp .7s .08s ease both;
+}
+.hero h1 em { color:var(--mint-dark); font-style:italic; }
+.hero-sub {
+  font-size:16px; color:var(--text-mid); line-height:1.8;
+  margin-bottom:36px; animation:fadeUp .7s .16s ease both;
+}
+.hero-btns { display:flex; gap:14px; flex-wrap:wrap; animation:fadeUp .7s .24s ease both; }
+.btn-main {
+  background:var(--mint); color:white; font-size:15px; font-weight:700;
+  padding:14px 30px; border-radius:30px; text-decoration:none;
+  box-shadow:0 6px 24px rgba(45,189,150,.35);
+  transition:transform .15s, box-shadow .15s;
+}
+.btn-main:hover { transform:translateY(-2px); box-shadow:0 10px 32px rgba(45,189,150,.45); }
+.btn-sub {
+  background:white; color:var(--mint-dark); font-size:15px; font-weight:600;
+  padding:14px 30px; border-radius:30px; text-decoration:none;
+  border:1.5px solid var(--border); transition:border-color .2s, background .2s;
+}
+.btn-sub:hover { border-color:var(--mint); background:var(--mint-pale); }
+
+.hero-stats {
+  display:flex; gap:44px; margin-top:52px;
+  animation:fadeUp .7s .32s ease both;
+}
+.stat-num { font-size:28px; font-weight:900; color:var(--text); letter-spacing:-1px; }
+.stat-num span { color:var(--mint); }
+.stat-label { font-size:12px; color:var(--text-light); margin-top:2px; }
+
+/* 채팅 프리뷰 */
+.hero-chat {
+  position:absolute; right:6%; top:50%; transform:translateY(-50%);
+  width:320px; z-index:1;
+  animation:fadeUp .9s .2s ease both;
+  filter:drop-shadow(0 24px 60px rgba(45,189,150,.18));
+}
+.chat-card {
+  background:white; border-radius:20px; overflow:hidden;
+  border:1px solid var(--border);
+}
+.chat-top {
+  background:linear-gradient(135deg, var(--mint-dark), var(--mint-deep));
+  padding:14px 18px; display:flex; align-items:center; gap:10px;
+}
+.chat-av {
+  width:36px; height:36px; background:rgba(255,255,255,.2);
+  border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:17px;
+}
+.chat-info .t { color:white; font-size:13px; font-weight:700; }
+.chat-info .s { color:rgba(255,255,255,.65); font-size:11px; }
+.chat-msgs { padding:16px; display:flex; flex-direction:column; gap:12px; }
+.m-in {
+  background:var(--mint-pale); border-radius:4px 14px 14px 14px;
+  padding:10px 13px; font-size:12.5px; color:var(--text); line-height:1.55;
+  max-width:85%;
+}
+.m-out {
+  align-self:flex-end; max-width:85%;
+  background:linear-gradient(135deg, var(--mint), var(--mint-dark));
+  border-radius:14px 4px 14px 14px;
+  padding:10px 13px; font-size:12.5px; color:white; line-height:1.55;
+}
+.m-time { font-size:10px; color:var(--text-light); margin-top:3px; }
+.m-time.r { text-align:right; }
+.typing-row { display:flex; align-items:center; gap:4px; padding:8px 13px; background:var(--mint-pale); border-radius:4px 14px 14px 14px; width:fit-content; }
+.typing-row span { width:6px; height:6px; background:var(--sage); border-radius:50%; animation:blink 1.4s infinite; }
+.typing-row span:nth-child(2){animation-delay:.2s}
+.typing-row span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+/* PROBLEMS */
+.prob-section { padding:96px 6%; background:var(--warm); }
+.sec-eyebrow { font-size:12px; font-weight:700; color:var(--mint-dark); letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; }
+.sec-title { font-family:'Lora',serif; font-size:clamp(26px,3.5vw,40px); color:var(--text); line-height:1.25; margin-bottom:14px; }
+.sec-desc { font-size:15px; color:var(--text-mid); line-height:1.75; max-width:480px; }
+.prob-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-top:48px; }
+.prob-card {
+  background:white; border:1px solid var(--border); border-radius:var(--radius);
+  padding:28px; transition:transform .2s, box-shadow .2s;
+}
+.prob-card:hover { transform:translateY(-3px); box-shadow:0 12px 36px rgba(45,189,150,.1); }
+.prob-icon { font-size:26px; margin-bottom:10px; }
+.prob-title { font-size:15px; font-weight:700; color:var(--text); margin-bottom:6px; }
+.prob-body { font-size:13.5px; color:var(--text-mid); line-height:1.65; }
+
+/* FEATURES */
+.feat-section { padding:96px 6%; }
+.feat-wrap { display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:start; margin-top:56px; }
+.feat-list { display:flex; flex-direction:column; gap:20px; }
+.feat-item {
+  display:flex; gap:18px; padding:24px;
+  background:var(--mint-pale); border:1px solid var(--border);
+  border-radius:var(--radius); transition:border-color .2s, box-shadow .2s;
+}
+.feat-item:hover { border-color:var(--mint); box-shadow:0 8px 28px rgba(45,189,150,.1); }
+.feat-icon-wrap {
+  width:46px; height:46px; flex-shrink:0;
+  background:white; border:1px solid var(--border);
+  border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px;
+}
+.feat-title { font-size:15px; font-weight:700; color:var(--text); margin-bottom:5px; }
+.feat-body { font-size:13px; color:var(--text-mid); line-height:1.65; }
+.feat-pill {
+  display:inline-block; margin-top:8px;
+  background:var(--mint-soft); color:var(--mint-dark);
+  font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px;
+}
+
+/* 오른쪽 시각 요소 */
+.feat-visual { display:flex; flex-direction:column; gap:14px; }
+.visual-card {
+  background:white; border:1px solid var(--border); border-radius:var(--radius);
+  padding:20px 22px;
+}
+.visual-card-title { font-size:12px; font-weight:700; color:var(--text-light); margin-bottom:10px; letter-spacing:.5px; }
+.stat-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.stat-row:last-child { margin-bottom:0; }
+.stat-label2 { font-size:13px; color:var(--text-mid); }
+.stat-bar-wrap { flex:1; margin:0 12px; height:6px; background:var(--mint-pale); border-radius:3px; overflow:hidden; }
+.stat-bar { height:100%; background:linear-gradient(90deg,var(--mint),var(--mint-dark)); border-radius:3px; }
+.stat-pct { font-size:12px; font-weight:700; color:var(--mint-dark); }
+
+.auto-tag {
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--mint-soft); border:1px solid rgba(45,189,150,.25);
+  color:var(--mint-dark); font-size:11px; font-weight:700;
+  padding:4px 12px; border-radius:20px;
+}
+.auto-dot { width:6px; height:6px; background:var(--mint); border-radius:50%; }
+
+/* HOW */
+.how-section { padding:96px 6%; background:linear-gradient(180deg,var(--mint-soft) 0%,var(--white) 100%); }
+.how-steps { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-top:52px; }
+.how-step {
+  background:white; border:1px solid var(--border); border-radius:var(--radius);
+  padding:28px 22px; text-align:center; position:relative;
+  transition:transform .2s, box-shadow .2s;
+}
+.how-step:hover { transform:translateY(-4px); box-shadow:0 14px 44px rgba(45,189,150,.12); }
+.how-step:not(:last-child)::after {
+  content:'›'; position:absolute; right:-14px; top:40px;
+  font-size:22px; color:var(--border);
+}
+.step-num {
+  width:42px; height:42px; background:var(--mint); color:white;
+  border-radius:12px; display:flex; align-items:center; justify-content:center;
+  font-size:16px; font-weight:900; margin:0 auto 14px;
+}
+.step-title { font-size:14px; font-weight:700; color:var(--text); margin-bottom:6px; }
+.step-body { font-size:12.5px; color:var(--text-mid); line-height:1.65; }
+
+/* PRICING */
+.price-section { padding:96px 6%; }
+.plan-wrap { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:52px; }
+.plan {
+  border:1.5px solid var(--border); border-radius:20px;
+  padding:36px 28px; position:relative; transition:transform .2s;
+}
+.plan:hover { transform:translateY(-4px); }
+.plan.best { border-color:var(--mint); box-shadow:0 0 0 4px rgba(45,189,150,.1); }
+.best-badge {
+  position:absolute; top:-13px; left:50%; transform:translateX(-50%);
+  background:var(--mint); color:white; font-size:11px; font-weight:700;
+  padding:4px 18px; border-radius:20px; white-space:nowrap;
+}
+.plan-name { font-size:13px; font-weight:700; color:var(--text-light); margin-bottom:8px; }
+.plan-price { font-size:34px; font-weight:900; color:var(--text); letter-spacing:-1px; }
+.plan-price sub { font-size:15px; font-weight:400; color:var(--text-light); }
+.plan-desc { font-size:13px; color:var(--text-light); margin:6px 0 22px; padding-bottom:22px; border-bottom:1px solid var(--border); }
+.plan-feats { display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
+.plan-feat { display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--text-mid); }
+.plan-feat::before { content:'✓'; color:var(--mint); font-weight:900; flex-shrink:0; }
+.plan-btn {
+  display:block; text-align:center; text-decoration:none;
+  font-size:14px; font-weight:700; padding:13px;
+  border-radius:12px; transition:all .15s;
+}
+.plan-btn-outline { border:1.5px solid var(--mint); color:var(--mint-dark); }
+.plan-btn-outline:hover { background:var(--mint); color:white; }
+.plan-btn-fill { background:var(--mint); color:white; box-shadow:0 4px 16px rgba(45,189,150,.3); }
+.plan-btn-fill:hover { background:var(--mint-dark); }
+
+.free-strip {
+  margin-top:22px; padding:18px 28px;
+  background:var(--mint-soft); border:1px solid rgba(45,189,150,.25);
+  border-radius:var(--radius); text-align:center;
+}
+.free-strip strong { font-size:15px; color:var(--text); }
+.free-strip p { font-size:13px; color:var(--text-mid); margin-top:4px; }
+
+/* DEMO CTA */
+.demo-section {
+  padding:80px 6%;
+  background:linear-gradient(135deg, var(--mint-dark) 0%, var(--mint-deep) 100%);
+  text-align:center; position:relative; overflow:hidden;
+}
+.demo-section::before {
+  content:''; position:absolute; inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1' fill='rgba(255,255,255,0.06)'/%3E%3C/svg%3E");
+}
+.demo-section h2 {
+  font-family:'Lora',serif; font-size:clamp(26px,3.5vw,40px);
+  color:white; margin-bottom:12px; position:relative;
+}
+.demo-section p { font-size:15px; color:rgba(255,255,255,.75); margin-bottom:36px; position:relative; }
+.demo-btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; position:relative; }
+.btn-demo-white {
+  background:white; color:var(--mint-dark); font-size:15px; font-weight:700;
+  padding:14px 32px; border-radius:30px; text-decoration:none;
+  box-shadow:0 6px 24px rgba(0,0,0,.15); transition:transform .15s;
+}
+.btn-demo-white:hover { transform:translateY(-2px); }
+.btn-demo-ghost {
+  background:rgba(255,255,255,.15); color:white;
+  border:1px solid rgba(255,255,255,.35);
+  font-size:15px; font-weight:500; padding:14px 32px; border-radius:30px; text-decoration:none;
+  transition:background .2s;
+}
+.btn-demo-ghost:hover { background:rgba(255,255,255,.22); }
+
+/* CONTACT */
+.contact-section { padding:96px 6%; background:var(--mint-pale); }
+.contact-inner { max-width:540px; margin:0 auto; }
+.contact-form { display:flex; flex-direction:column; gap:14px; margin-top:40px; }
+.form-row2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+input, textarea, select {
+  width:100%; padding:13px 16px;
+  border:1.5px solid var(--border); border-radius:10px;
+  font-family:inherit; font-size:14px; color:var(--text); background:white;
+  transition:border-color .2s; outline:none;
+}
+input:focus,textarea:focus,select:focus { border-color:var(--mint); }
+textarea { resize:vertical; min-height:100px; }
+.submit-btn {
+  background:var(--mint); color:white; font-size:15px; font-weight:700;
+  padding:15px; border:none; border-radius:12px; cursor:pointer;
+  box-shadow:0 4px 16px rgba(45,189,150,.3); transition:background .2s, transform .15s;
+}
+.submit-btn:hover { background:var(--mint-dark); transform:translateY(-1px); }
+
+/* FOOTER */
+footer {
+  background:var(--text); padding:36px 6%;
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;
+}
+.foot-logo { font-size:18px; font-weight:900; color:white; }
+.foot-logo span { color:var(--mint); }
+.foot-copy { font-size:13px; color:rgba(255,255,255,.4); }
+
+/* RESPONSIVE */
+@media(max-width:960px){
+  .hero-chat,.feat-wrap>:last-child { display:none; }
+  .feat-wrap { grid-template-columns:1fr; }
+  .prob-grid,.how-steps,.plan-wrap { grid-template-columns:1fr; }
+  .how-step::after { display:none; }
+  .form-row2 { grid-template-columns:1fr; }
+  .nav-links { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Clinic<span>Talk</span></div>
+  <div class="nav-links">
+    <a href="#features">기능</a>
+    <a href="#how">도입 방법</a>
+    <a href="#pricing">요금제</a>
+    <a href="#contact">문의</a>
+  </div>
+  <a href="#contact" class="nav-cta">무료 체험 신청</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-circle1"></div>
+  <div class="hero-circle2"></div>
+  <div class="hero-content">
+    <div class="hero-badge"><span class="badge-dot"></span> 소규모 병원 특화 · AI 자동응답</div>
+    <h1>환자 문의,<br><em>24시간</em><br>자동으로 답합니다</h1>
+    <p class="hero-sub">진료시간, 예약, 위치 문의를 AI가 즉시 처리해드려요.<br>원장님은 오직 진료에만 집중하세요.</p>
+    <div class="hero-btns">
+      <a href="#contact" class="btn-main">🎁 3개월 무료로 시작하기</a>
+      <a href="#demo" class="btn-sub">데모 체험하기</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="stat-num">24<span>h</span></div><div class="stat-label">자동 응답</div></div>
+      <div><div class="stat-num">3<span>초</span></div><div class="stat-label">평균 응답속도</div></div>
+      <div><div class="stat-num">1~2<span>일</span></div><div class="stat-label">도입 소요</div></div>
+    </div>
+  </div>
+  <div class="hero-chat">
+    <div class="chat-card">
+      <div class="chat-top">
+        <div class="chat-av">🏥</div>
+        <div class="chat-info">
+          <div class="t">OO 산부인과</div>
+          <div class="s">● 자동응답 중</div>
+        </div>
+      </div>
+      <div class="chat-msgs">
+        <div><div class="m-in">안녕하세요! 토요일도 진료하나요?</div><div class="m-time">오전 10:31</div></div>
+        <div style="align-self:flex-end"><div class="m-out">안녕하세요 😊 토요일은 오전 9시~1시까지 진료합니다!</div><div class="m-time r">오전 10:31</div></div>
+        <div><div class="m-in">초진 예약은 어떻게 하나요?</div><div class="m-time">오전 10:32</div></div>
+        <div class="typing-row"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEMS -->
+<section class="prob-section" id="problem">
+  <div class="sec-eyebrow">이런 어려움, 있으시지 않나요?</div>
+  <div class="sec-title">CS 부담 때문에<br>진료에 집중하기 어려운 하루</div>
+  <div class="sec-desc">전화와 메시지로 쏟아지는 단순 반복 문의. 진료 중에도 멈출 수가 없어요.</div>
+  <div class="prob-grid">
+    <div class="prob-card"><div class="prob-icon">📞</div><div class="prob-title">진료 중 끊임없는 전화</div><div class="prob-body">수술·진료 중에도 울리는 전화. 집중이 깨지고 환자 응대 품질이 낮아져요.</div></div>
+    <div class="prob-card"><div class="prob-icon">🌙</div><div class="prob-title">진료 외 시간 문의 누적</div><div class="prob-body">저녁·주말에 쌓인 문의들. 다음날 출근 후 밀린 답변부터 시작해야 해요.</div></div>
+    <div class="prob-card"><div class="prob-icon">🔁</div><div class="prob-title">똑같은 질문, 매일 반복</div><div class="prob-body">"진료시간이 어떻게 돼요?", "주차 가능한가요?" 하루에도 수십 번씩.</div></div>
+    <div class="prob-card"><div class="prob-icon">👩‍⚕️</div><div class="prob-title">직원 업무 과부하</div><div class="prob-body">접수·수납·CS를 동시에 처리하는 직원. 번아웃과 이직의 원인이에요.</div></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="feat-section" id="features">
+  <div class="sec-eyebrow">주요 기능</div>
+  <div class="sec-title">클리닉톡이<br>해결해드립니다</div>
+  <div class="sec-desc">단순 챗봇이 아닙니다. 우리 병원에 맞게 학습된 AI가 24시간 응대해요.</div>
+  <div class="feat-wrap">
+    <div class="feat-list">
+      <div class="feat-item">
+        <div class="feat-icon-wrap">🤖</div>
+        <div>
+          <div class="feat-title">AI 자동응답 — 24시간, 365일</div>
+          <div class="feat-body">예약 방법, 진료시간, 위치, 주차 등 반복 문의를 AI가 즉시 처리해요. 늦은 밤 문의도 빠짐없이 답변합니다.</div>
+          <span class="feat-pill">평균 응답 3초 이내</span>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon-wrap">🏥</div>
+        <div>
+          <div class="feat-title">병원 맞춤 커스터마이징</div>
+          <div class="feat-body">진료과목, 운영시간, FAQ를 병원에 맞게 설정해드려요. 산부인과·피부과·정형외과 등 과별 특화 설정 가능합니다.</div>
+          <span class="feat-pill">도입 1~2일 소요</span>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon-wrap">🛡️</div>
+        <div>
+          <div class="feat-title">안전한 의료 경계선</div>
+          <div class="feat-body">증상·처방 관련 민감한 문의는 자동으로 "내원 또는 전화 문의" 안내로 전환해요. 의료 책임 문제를 원천 차단합니다.</div>
+          <span class="feat-pill">의료법 준수 설계</span>
+        </div>
+      </div>
+    </div>
+    <div class="feat-visual">
+      <div class="visual-card">
+        <div class="visual-card-title">자동 처리된 문의 유형</div>
+        <div class="stat-row">
+          <div class="stat-label2">진료시간·위치</div>
+          <div class="stat-bar-wrap"><div class="stat-bar" style="width:88%"></div></div>
+          <div class="stat-pct">88%</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label2">예약 방법</div>
+          <div class="stat-bar-wrap"><div class="stat-bar" style="width:74%"></div></div>
+          <div class="stat-pct">74%</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label2">주차·편의시설</div>
+          <div class="stat-bar-wrap"><div class="stat-bar" style="width:65%"></div></div>
+          <div class="stat-pct">65%</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label2">보험·비용 안내</div>
+          <div class="stat-bar-wrap"><div class="stat-bar" style="width:58%"></div></div>
+          <div class="stat-pct">58%</div>
+        </div>
+      </div>
+      <div class="visual-card" style="background:var(--mint-pale)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">지금 이 순간도</div>
+          <div class="auto-tag"><span class="auto-dot"></span> 자동응답 중</div>
+        </div>
+        <div style="font-size:28px;font-weight:900;color:var(--mint-dark);letter-spacing:-1px">24<span style="font-size:16px;font-weight:400;color:var(--text-light)">시간</span></div>
+        <div style="font-size:13px;color:var(--text-mid);margin-top:4px">환자 문의를 놓치지 않아요</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section class="how-section" id="how">
+  <div class="sec-eyebrow">도입 방법</div>
+  <div class="sec-title">4단계로 끝납니다</div>
+  <div class="sec-desc">복잡한 설치 없이, 빠르면 하루 만에 운영 시작이에요.</div>
+  <div class="how-steps">
+    <div class="how-step"><div class="step-num">1</div><div class="step-title">상담 신청</div><div class="step-body">아래 문의 양식 작성 후 제출해주세요. 24시간 내 연락드려요.</div></div>
+    <div class="how-step"><div class="step-num">2</div><div class="step-title">병원 정보 입력</div><div class="step-body">진료과목, 운영시간, FAQ를 전달해주시면 설정해드려요.</div></div>
+    <div class="how-step"><div class="step-num">3</div><div class="step-title">테스트 확인</div><div class="step-body">데모 링크로 직접 테스트하고, 수정 사항을 바로 반영해드려요.</div></div>
+    <div class="how-step"><div class="step-num">4</div><div class="step-title">즉시 운영</div><div class="step-body">링크를 홈페이지·SNS·QR코드로 공유하면 바로 시작이에요.</div></div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="price-section" id="pricing">
+  <div class="sec-eyebrow">요금제</div>
+  <div class="sec-title">합리적인 가격으로<br>시작하세요</div>
+  <div class="sec-desc">직원 인건비의 10분의 1 비용으로 CS 부담을 줄여드려요.</div>
+  <div class="plan-wrap">
+    <div class="plan">
+      <div class="plan-name">베이직</div>
+      <div class="plan-price">49,000<sub>원/월</sub></div>
+      <div class="plan-desc">월 300건 이하 문의</div>
+      <div class="plan-feats">
+        <div class="plan-feat">AI 자동응답</div>
+        <div class="plan-feat">기본 정보 설정</div>
+        <div class="plan-feat">이메일 지원</div>
+        <div class="plan-feat">월간 리포트</div>
+      </div>
+      <a href="#contact" class="plan-btn plan-btn-outline">시작하기</a>
+    </div>
+    <div class="plan best">
+      <div class="best-badge">🌿 가장 인기</div>
+      <div class="plan-name">스탠다드</div>
+      <div class="plan-price">99,000<sub>원/월</sub></div>
+      <div class="plan-desc">월 1,000건 이하 문의</div>
+      <div class="plan-feats">
+        <div class="plan-feat">베이직 모든 기능</div>
+        <div class="plan-feat">진료과별 맞춤 설정</div>
+        <div class="plan-feat">카카오채널 연동 예정</div>
+        <div class="plan-feat">카카오톡 1:1 지원</div>
+        <div class="plan-feat">주간 리포트</div>
+      </div>
+      <a href="#contact" class="plan-btn plan-btn-fill">시작하기</a>
+    </div>
+    <div class="plan">
+      <div class="plan-name">프로</div>
+      <div class="plan-price">179,000<sub>원/월</sub></div>
+      <div class="plan-desc">무제한 문의</div>
+      <div class="plan-feats">
+        <div class="plan-feat">스탠다드 모든 기능</div>
+        <div class="plan-feat">다진료과 통합 설정</div>
+        <div class="plan-feat">우선 대응 지원</div>
+        <div class="plan-feat">맞춤 FAQ 고도화</div>
+        <div class="plan-feat">실시간 대시보드</div>
+      </div>
+      <a href="#contact" class="plan-btn plan-btn-outline">시작하기</a>
+    </div>
+  </div>
+  <div class="free-strip">
+    <strong>🎁 지금 신청하시면 첫 3개월 무료 체험</strong>
+    <p>신용카드 불필요 · 언제든 해지 가능 · 소개 병원 추가 1개월 무료</p>
+  </div>
+</section>
+
+<!-- DEMO CTA -->
+<section class="demo-section" id="demo">
+  <h2>직접 체험해보세요</h2>
+  <p>설명보다 한 번 써보는 게 빠릅니다.<br>데모에서 실제 질문을 입력해보세요.</p>
+  <div class="demo-btns">
+    <a href="https://demo.clinictalk.kr" class="btn-demo-white" target="_blank">👉 데모 체험하기</a>
+    <a href="#contact" class="btn-demo-ghost">무료 체험 신청</a>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="contact-inner">
+    <div class="sec-eyebrow" style="text-align:center">문의하기</div>
+    <div class="sec-title" style="text-align:center;font-size:30px">무료 체험 신청</div>
+    <p style="text-align:center;color:var(--text-mid);font-size:14px;margin-top:8px">작성해주시면 24시간 내에 직접 연락드릴게요.</p>
+    <div class="contact-form">
+      <div class="form-row2">
+        <input type="text" placeholder="병원명 *">
+        <input type="text" placeholder="원장님 성함 *">
+      </div>
+      <div class="form-row2">
+        <input type="tel" placeholder="연락처 *">
+        <select>
+          <option value="" disabled selected>진료과목 선택</option>
+          <option>산부인과</option><option>피부과</option><option>정형외과</option>
+          <option>내과</option><option>성형외과</option><option>이비인후과</option>
+          <option>치과</option><option>기타</option>
+        </select>
+      </div>
+      <textarea placeholder="궁금한 점이나 요청사항을 자유롭게 적어주세요 (선택)"></textarea>
+      <button class="submit-btn" onclick="alert('신청 감사합니다! 24시간 내로 연락드릴게요 😊')">무료 체험 신청하기 →</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">Clinic<span>Talk</span> 클리닉톡</div>
+  <div class="foot-copy">© 2025 ClinicTalk · hello@clinictalk.kr</div>
+  <div class="foot-copy">소규모 병원을 위한 AI 자동응답 서비스</div>
+</footer>
+
+</body>
+</html>
